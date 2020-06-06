@@ -23,7 +23,7 @@ Se quiseres criar um novo comando para o servidor, podes ver como são estrutura
         "role_id":"123456789",
         "channel_id":"123456789",
         "rules_channel_id":"123456789",
-        "greeting": "Bem-vindo(a) ao rpgportugal.com! Aqui podes apresentar-te à comunidade. Procuras jogar RPGs tabletop? Em que região de Portugal? Online? Que jogos te interessam?"
+        "greeting": "Bem-vindo(a) ao rpgportugal.com!..."
     },
     "log":{
         "guild_id":"123456789",
