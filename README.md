@@ -48,7 +48,7 @@ Se quiseres criar um novo comando para o servidor, podes ver como são estrutura
         "gumshoe": "123456789",
         "bilhete": "123456789"
     },
-    "help_text": "Eu sou a Torre dos Dados, a bota que está sempre em beta :sweat_smile:\nPosso dar-te roles para identificar o que jogas se me deres o comando `!quero` :+1:\nPosso lançar dados por ti através de comandos como `!d20`, `!2d6`, `!6d10` ou `!4df` :game_die:\nConsulta https://rpgportugal.com/torre/ se quiseres saber mais sobre mim.",
+    "help_text": "Eu sou a Torre dos Dados, a bota que está sempre em beta :sweat_smile: ...",
     "data":{
         "ready_count": 1
     }
