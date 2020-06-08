@@ -19,7 +19,7 @@ model.countMembers =()=>{
     let guild = client.guilds.get(model.guild_id);
     model.data.available = guild.available;
     if(!model.data.available){ 
-        save.emit('downDiscord', modal.data);
+        save.emit('downDiscord', model.data);
         return false; 
     }
     let valid_members = guild.members.array().filter( m => (!m.user.bot && m.roles.size > 0) );//not counting members without roles or bots
@@ -43,7 +43,7 @@ model.countRoles =()=>{
     let guild = client.guilds.get(model.guild_id);
     model.data.available = guild.available;
     if(!model.data.available){ 
-        save.emit('downDiscord', modal.data);
+        save.emit('downDiscord', model.data);
         return false; 
     }
     let role_count = {};
