@@ -35,6 +35,16 @@ module.exports.commasAnd = function(arr){
     if(arr.length == 1){ return arr[0]; }
     return arr.slice(0,-1).join(', ') + ' e ' + arr[arr.length-1];
 };
+module.exports.randomTokenFromID = function(id){//random not-very-scary token based on the discord snowflake
+    var token = parseInt(id).toString(16);
+    token += token;
+    var array = token.split('');
+    for(let i=array.length-1; i>0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array.join(''); 
+};
 module.exports.genesys = {
     dice: {
         b:[ 

@@ -26,6 +26,11 @@ module.exports = function(dependencies){
             let valid = commands.valid(message);
             if(!valid){ return false; }
             const member = client.guilds.get(model.guild_id).members.get(message.author.id);
+            if(!member){ return false; }
+            if(member.roles.array().filter(role => role.id == model.new_members.role_id).length == 1){
+                message.channel.send(model.new_members.you_need_gold);
+                return false;
+            }
             //a watchlist for disruptive users who may spam the bot
             let watched = db.prepare('SELECT id FROM watchlist WHERE username=:username OR user_id=:user_id').get(
                 {username: member.username, user_id: member.id}
@@ -85,6 +90,7 @@ module.exports = function(dependencies){
             },
             invites: function(command_args, member, channel){ return behaviors.checkInvites(); },
             channels: function(command_args, member, channel){ return behaviors.briefChannels(); },
+            kick: function(command_args, member, channel){ return behaviors.kickOldestIdleNewMember(); },
             hello: function(command_args, member, channel){ return tools.greet(moment()) + ` :wave:`; },
             ajuda: function(command_args, member, channel){ return model.help_text; },
             procura: function(command_args, member, channel){ return 'https://pt.wikipedia.org/wiki/' + tools.safeURLParam(command_args.join(' ')); },
@@ -124,16 +130,16 @@ module.exports = function(dependencies){
             gen: function(command_args, member, channel){
                 if(command_args.length == 0){ return 'Indica-me que dados Genesys lançar (ex: aapdd).'; }
                 return tools.genesys.roll(client, command_args[0]);
+            },
+            avatar: function(command_args, member, channel){
+                return `${member.user.displayAvatarURL}\n${member.displayName}`;
             }
         }
-    };
-    commands.items.d100 = function(command_args, member, channel){ 
-        return `${tools.emoji(client, 'd10')}${tools.emoji(client, 'd10')} **${tools.random(100)}**`; 
     };
     commands.items['4df'] = function(command_args, member, channel){ 
         return ` **${tools.random(3, -1) + tools.random(3, -1) + tools.random(3, -1) + tools.random(3, -1)}**`; 
     };
-    const emoji_dice = [2,4,6,8,10,12,20, 'f'];
+    const emoji_dice = [2,4,6,8,10,12,20,100, 'f'];
     const dice_pools = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
     emoji_dice.map(n=>{ 
         dice_pools.map(size=>{ 

@@ -140,7 +140,7 @@ const behaviors = {
             setTimeout(behaviors.reactToAuthorExit.bind(this, message, true), 30000);
         }else{
             let guild = client.guilds.get(model.guild_id);
-            if(!guild.member(member.author.id)){ 
+            if(!guild.member(message.author.id)){ 
                 let text = `Parece-me que ${message.author.username} já não se encontra no servidor. :wave:`;
                 client.channels.get(model.new_members.channel_id).send(text);
             }else if(message.author.presence.status == 'online'){//still online
@@ -150,6 +150,19 @@ const behaviors = {
                 client.channels.get(model.new_members.channel_id).send(text);
             }
         }
+    },
+    kickOldestIdleNewMember: function(){
+        let idle_member = db.prepare(`
+        SELECT user_id, joinedTimestamp, displayName FROM new_member 
+        WHERE joinedTimestamp<DATE('now', '-3 month') AND lastMessageID IS NULL AND presence='offline' LIMIT 1
+        `).get({});
+        if(!idle_member){ return false; }
+        var guild = client.guilds.get(model.guild_id);
+        let member = guild.member(idle_member.user_id.toString()) 
+        if(!member || member.lastMessageID || member.presence.status !='offline'){ return false; }
+        //instead of member.kick we log to test assumptions
+        let text = `${idle_member.displayName} está no servidor desde ${idle_member.joinedTimestamp} sem dizer nada`;
+        log_channel.message(text)
     }
 }
 
@@ -206,8 +219,26 @@ const keep = {
             let insert_sql = `INSERT INTO new_member(${Object.keys(insert).join(', ')}) VALUES(:${Object.keys(insert).join(', :')})`;
             db.prepare(insert_sql).run(insert);
         });
+    },
+    direct_command: function(row){
+        row.arguments = (row.arguments ? row.arguments.substr(0, 200) : null); 
+        row.reply = (row.reply ? row.reply.substr(0, 200) : null); 
+        let exists = db.prepare('SELECT user_id, item FROM direct_command WHERE user_id=:user_id AND item=:item').get(
+            {user_id:row.user_id, item:row.item}
+        );
+        if(exists){ 
+            let update_sql = `
+            UPDATE direct_command SET timestamp=STRFTIME('%Y-%m-%d %H:%M:%S','now'), arguments=:arguments, reply=:reply 
+            WHERE user_id=:user_id AND item=:item`;
+            db.prepare(update_sql).run(row);
+        }else{
+            let insert_sql = `INSERT INTO direct_command(${Object.keys(row).join(', ')}) VALUES(:${Object.keys(row).join(', :')})`;
+            db.prepare(insert_sql).run(row);
+        }
     }
 }
+
+const direct_commands = require('./direct_commands.js')({model:model, tools:tools, moment:moment, client:client, db:db, keep:keep});
 
 const log_channel = {
     countMembers: function(data){
@@ -253,7 +284,10 @@ client.on('ready', () => {
 });
 client.on('message', message => {
     if(message.system){ return false; }
-    if(message.channel.type == 'dm'){ return false; }
+    if(message.channel.type == 'dm'){ 
+        direct_commands.run(message);
+        return false; 
+    }
     if(message.author.bot){ return false; }
     let valid_command = commands.run(message);
     if(valid_command){ return valid_command; }
@@ -283,8 +317,11 @@ client.login(model.token);
 const job_every_5m = new CronJob('*/5 * * * *', function(){
     behaviors.checkInvites();
 }, null, true, 'Europe/Lisbon');
-const job_every_6h = new CronJob('20 */6 * * *', function(){
+const job_every_6h = new CronJob('0 */6 * * *', function(){
     model.countMembers();
+}, null, true, 'Europe/Lisbon');
+const job_every_day = new CronJob('1 12 * * *', function(){
+    behaviors.kickOldestIdleNewMember();
 }, null, true, 'Europe/Lisbon');
 const job_every_wednesday = new CronJob('0 4 * * 3', function(){
     behaviors.briefChannels();
