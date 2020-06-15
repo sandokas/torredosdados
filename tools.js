@@ -93,7 +93,8 @@ module.exports.genesys = {
             result_string += `${self.emoji(client, 'dg'+character)}${symbols}  `;
             return result_string;
         }, '');
-        if(characters_string == 'f'){//force die only 
+	var regExp = new RegExp('[bsadpc]'); 
+        if(!regExp.test(characters_string)){ 
             return result_string;
         }
         result_string += `\n**`;
