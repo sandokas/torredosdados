@@ -51,6 +51,9 @@ module.exports = function(dependencies){
             quero: function(command_args, member, channel){ 
                 const keys = Object.keys(model.roles);
                 let requested_keys = command_args.filter(requested_key=>keys.indexOf(requested_key)>-1);
+                if (command_args[0] == 'todos'){
+                    requested_keys = keys;
+                }
                 if(requested_keys.length == 0){
                     return `Estes são os items disponíveis: ${keys.join(', ')}.\n Podes dizer por exemplo !quero ${keys[2]} ${keys[4]} ${keys[0]}`;
                 }
